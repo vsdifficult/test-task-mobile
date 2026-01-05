@@ -1,0 +1,14 @@
+
+fastapi
+uvicorn[standard]
+aiosqlite
+SQLAlchemy
+PyJWT
+passlib[bcrypt]
+python-dotenv
+pydantic
+pydantic-settings
+email-validator
+python-multipart
+redis
+slowapi
