@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
+import uuid
+from pydantic import BaseModel 
 from passlib.context import CryptContext
-import jwt 
+import jwt, redis.asyncio as redis 
+
+redis_client = redis.from_url("redis://localhost:6379")
 
 SECRET_KEY = "SUPER_SECRET_KEY"
 ALGORITHM = "HS256"
@@ -17,9 +21,17 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_access_token(data: dict):
     to_encode = data.copy()
+
+    jti = str(uuid.uuid4())
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+
+    to_encode.update({
+        "exp": expire,
+        "jti": jti
+    })
+
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def decode_token(token: str):
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

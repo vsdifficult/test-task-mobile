@@ -158,12 +158,39 @@ class AuthResponse(BaseModel):
     error: str | None = None
     token: str | None = None
 
-@app.get("/logout")
-async def logout_user(current_user: User = Depends(get_current_user)):
+import time
+
+@app.post("/logout")
+async def logout_user(request: Request):
+    auth = request.headers.get("Authorization")
+    if not auth or not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401)
+
+    token = auth.split(" ")[1]
+
+    payload = decode_token(token)
+
+    jti = payload.get("jti")
+    exp = payload.get("exp")
+
+    if not jti or not exp:
+        raise HTTPException(status_code=400, detail="Invalid token payload")
+
+    ttl = int(exp - time.time())
+    if ttl <= 0:
+        return AuthResponse(success=True, message="token already expired")
+
+    await redis_client.setex(
+        f"jwt_blacklist:{jti}",
+        ttl,
+        1
+    )
+
     return AuthResponse(
         success=True,
         message="logout successful"
     )
+
 
 
 @app.post("/login")
