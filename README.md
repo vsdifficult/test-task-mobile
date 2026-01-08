@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 5. Запустить Redis:
 ```bash
-docker run -d -p 6379:6379 redis:alpine
+docker run -d -p 6379:6379 redis:alpine или docker compose up -d 
 ```
 
 6. Запустить приложение:
